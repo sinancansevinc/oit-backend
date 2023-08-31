@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+gunicorn = "*"
+psycopg2 = "*"
+celery = "*"
+django-celery-beat = "*"
+django-celery-results = "*"
+tzdata = "*"
+djangorestframework = "*"
+django-filter = "*"
+factory-boy = "*"
+drf-writable-nested = "*"
+django-cors-headers = "*"
+requests = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile.api
+    container_name: api
+    restart: unless-stopped
+    volumes:
+      - ./api:/code
+    env_file:
+      - ./.env
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    volumes:
+      # Nginx conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      # Static files locations
+      - ./api/static:/api/code/static
+    depends_on:
+      - api
+
+  postgres:
+    image: postgres:13.2-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRE_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: django
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: rabbitmq
+    hostname: rabbit-dev
+    restart: unless-stopped
+    ports:
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+
+  celery:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile.celery
+    container_name: celery
+    restart: unless-stopped
+    volumes:
+      - ./api:/code
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ./.env
+
+volumes:
+  pgdata:
+  rabbitmq:
